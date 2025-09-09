@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-2b1358a67f6922131da773c90f833ba939795d42",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/DocumentRegistry.sol": "project/contracts/DocumentRegistry.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/DocumentRegistry.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\n/**\n * @title DocumentRegistry\n * @dev Stores metadata for documents on IPFS.\n */\ncontract DocumentRegistry {\n    \n    struct Document {\n        uint id;\n        string docHash;\n        address owner;\n        string category;\n        string authors;\n        uint deadline;\n        uint uploadTimestamp;\n    }\n\n    uint256 private _documentIdCounter;\n    mapping(uint256 => Document) public documents;\n    mapping(address => uint256[]) private _docsByOwner;\n    mapping(bytes32 => uint256[]) private _docsByCategory;\n\n    event DocumentUploaded(\n        uint256 indexed id,\n        address indexed owner,\n        string category,\n        string authors,\n        uint256 deadline,\n        string docHash\n    );\n\n    function uploadDocument(\n        string memory _docHash,\n        string memory _category,\n        string memory _authors,\n        uint256 _deadline\n    ) public {\n        require(bytes(_docHash).length > 0, \"Document hash cannot be empty\");\n        \n        _documentIdCounter++;\n        uint256 newId = _documentIdCounter;\n        \n        documents[newId] = Document({\n            id: newId,\n            docHash: _docHash,\n            owner: msg.sender,\n            category: _category,\n            authors: _authors,\n            deadline: _deadline,\n            uploadTimestamp: block.timestamp\n        });\n\n        _docsByOwner[msg.sender].push(newId);\n        _docsByCategory[keccak256(abi.encodePacked(_category))].push(newId);\n\n        emit DocumentUploaded(newId, msg.sender, _category, _authors, _deadline, _docHash);\n    }\n\n    function getTotalDocuments() public view returns (uint256) {\n        return _documentIdCounter;\n    }\n\n    function getDocumentsByOwner(address _owner) external view returns (uint256[] memory) {\n        return _docsByOwner[_owner];\n    }\n\n    function getDocumentsByCategory(string calldata _category) external view returns (uint256[] memory) {\n        return _docsByCategory[keccak256(abi.encodePacked(_category))];\n    }\n}"
+      }
+    }
+  }
+}

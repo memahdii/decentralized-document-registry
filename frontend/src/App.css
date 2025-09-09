@@ -1,0 +1,171 @@
+/* Scoped component styles for App */
+
+.app-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: saturate(140%) blur(10px);
+  background: linear-gradient(180deg, rgba(10, 15, 30, 0.8) 0%, rgba(10, 15, 30, 0.4) 100%);
+  border-bottom: 1px solid rgba(120, 140, 180, 0.15);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: radial-gradient(300px 200px at 20% 20%, #3b82f6, #06b6d4);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.35);
+}
+
+.brand-title {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.app-main {
+  flex: 1;
+  display: grid;
+  place-items: start center;
+}
+
+.hero {
+  text-align: center;
+  margin-top: 36px;
+}
+
+.hero h1 { font-size: 34px; }
+.hero p { color: var(--color-text-muted); margin-top: 6px; }
+
+.panel {
+  width: 100%;
+  max-width: 680px;
+  margin: 18px auto 32px;
+  padding: 20px;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.form-row { display: grid; gap: 8px; }
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account .addr {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  color: var(--color-text);
+}
+
+.footer {
+  padding: 24px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.doc-table-wrap { overflow-x: auto; }
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.doc-table th, .doc-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(120, 140, 180, 0.15);
+  text-align: left;
+}
+.doc-table thead th { color: var(--color-text-muted); font-weight: 500; }
+
+/* IPFS Actions */
+.ipfs-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ipfs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+
+.ipfs-btn.primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: 1px solid #2563eb;
+}
+
+.ipfs-btn.primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.ipfs-btn.secondary {
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
+}
+
+.ipfs-btn.secondary:hover {
+  background: #334155;
+  color: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.ipfs-btn.copy {
+  background: #0f172a;
+  color: #64748b;
+  border: 1px solid #1e293b;
+}
+
+.ipfs-btn.copy:hover {
+  background: #1e293b;
+  color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.ipfs-btn span {
+  font-size: 12px;
+}
+
+
