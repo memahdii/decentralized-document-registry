@@ -8,7 +8,6 @@ The purpose of this project is to allow users to securely register important doc
 This approach provides a verifiable, tamper-proof record on the blockchain while keeping the storage of large files efficient and cost-effective.
 
 ## 2. Technologies Used
-You can break down the technologies into four main categories:
 
 ### Backend (The Smart Contract)
 - Solidity: The primary programming language used to write the smart contract, which is the standard for the Ethereum ecosystem.
@@ -23,13 +22,12 @@ You can break down the technologies into four main categories:
 - React: A popular JavaScript library used to build the interactive web UI.
 - TypeScript: A superset of JavaScript that adds static typing for a more robust development experience.
 - Vite: A modern, fast build tool used to develop and serve the React app.
-- Viem: A lightweight and efficient TypeScript library used to communicate with the Ethereum blockchain. It bridges the website to MetaMask and smart contract calls.
+- Viem.js: A lightweight and efficient TypeScript library used to communicate with the Ethereum blockchain. It bridges the website to MetaMask and smart contract calls.
 
 ### Wallet & Connection
 - MetaMask: A browser-based crypto wallet that users need to interact with the dApp. It securely manages their accounts and private keys, and is used to sign and approve transactions.
 
 ## 3. The Workflow (How It All Works)
-Here is the step-by-step flow of how a user interacts with the dApp:
 
 1) Connect Wallet: A user arrives at the web application and clicks “Connect Wallet.” MetaMask prompts them to approve the connection. Once approved, the website can see their public wallet address.
 
@@ -129,7 +127,3 @@ Then:
 ```bash
 npx hardhat ignition deploy ./ignition/modules/DeployRegistry.ts --network sepolia
 ```
-
-## 7. Security notes
-- Do not ship a Pinata JWT in the frontend. Prefer a simple backend proxy or delegated upload keys.
-- Avoid hardcoding the contract address in production. Load from deployment artifacts or env at build time.
