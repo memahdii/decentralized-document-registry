@@ -33,7 +33,7 @@ function App() {
   const [filterOwner, setFilterOwner] = useState<string>('');
   
   // ---PINATA JWT KEY ---
-  const PINATA_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI2ZjIxYWU0NS1jODQ3LTQzMWEtOWJlNi1mYmFmOGRjMzYwY2MiLCJlbWFpbCI6Im0uaG9zc2Vpbmlhbjc3QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiI0OWZlYmQwZGFjYjgzNjYyNmM0OCIsInNjb3BlZEtleVNlY3JldCI6ImI0ODBmOWFjNjMwYjY3ODUzNjkwY2MxMTY5MWNlNjUwYjdhNDk3MWZmZGJhZTRmN2M0NmU1M2FiMDQ0YmJiYjMiLCJleHAiOjE3ODg3ODEzMjR9.q7vjisTc27A2yNwYX1UtrJR_SmFn_Jh94NwWUpfT2tw';
+  const PINATA_JWT = '';
 
   const connectWallet = async () => {
     if (window.ethereum) {
