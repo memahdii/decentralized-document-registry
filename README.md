@@ -1,4 +1,4 @@
-## 1. Project Summary (What You Have Done)
+## 1. Project Summary
 I built a full-stack decentralized application (dApp) called the “Decentralized Document Registry.”
 
 The purpose of this project is to allow users to securely register important documents. It achieves this by using a hybrid storage model:
