@@ -11,8 +11,8 @@ declare global {
   }
 }
 
-// --- CONFIRM DEPLOYED CONTRACT ADDRESS HERE ---
-const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+// --- CONTRACT ADDRESS ---
+const contractAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
 function App() {
   const [account, setAccount] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -32,7 +32,7 @@ function App() {
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterOwner, setFilterOwner] = useState<string>('');
   
-  // ---PINATA JWT KEY ---
+  // --- PINATA JWT (temporarily hardcoded for testing) ---
   const PINATA_JWT = '';
 
   const connectWallet = async () => {
@@ -81,6 +81,30 @@ function App() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!file || !account) return alert("Please connect wallet and select a file.");
+    
+    // Security checks
+    if (!PINATA_JWT) {
+      alert("Error: PINATA_JWT not configured.");
+      return;
+    }
+    
+    // File validation
+    const maxFileSize = 10 * 1024 * 1024; // 10MB limit
+    if (file.size > maxFileSize) {
+      alert("File size too large. Maximum size is 10MB.");
+      return;
+    }
+    
+    // Input validation
+    if (category.length > 100) {
+      alert("Category too long. Maximum 100 characters.");
+      return;
+    }
+    
+    if (authors.length > 200) {
+      alert("Authors field too long. Maximum 200 characters.");
+      return;
+    }
 
     setIsLoading(true);
     setMessage('1/3: Uploading file to IPFS...');
@@ -105,7 +129,7 @@ function App() {
     formData.append('pinataOptions', options);
 
     try {
-      // Step 1: Upload to IPFS
+      // Upload to IPFS
       const ipfsResponse = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", formData, {
         headers: { 
           'Authorization': `Bearer ${PINATA_JWT}`,
@@ -122,7 +146,7 @@ function App() {
       
       setMessage(`2/3: File uploaded! Hash: ${ipfsHash}. Please confirm the transaction in MetaMask...`);
 
-      // Step 2: Call the Smart Contract
+      // Call the Smart Contract
       const walletClient = createWalletClient({
         chain: hardhat,
         transport: custom(window.ethereum),
@@ -142,6 +166,9 @@ function App() {
       await walletClient.waitForTransactionReceipt({ hash: txHash });
 
       setMessage(`Success! Document registered on the blockchain. Tx: ${txHash}`);
+      
+      // Wait longer for the transaction to be mined and circuit breaker to reset
+      await new Promise(resolve => setTimeout(resolve, 5000));
       await fetchDocuments();
 
     } catch (error) {
@@ -154,7 +181,11 @@ function App() {
 
   const fetchDocuments = async () => {
     try {
-      if (!window.ethereum) return;
+      if (!window.ethereum) {
+        console.log('No ethereum provider found');
+        return;
+      }
+      console.log('Fetching documents from contract:', contractAddress);
       const client = createWalletClient({
         chain: hardhat,
         transport: custom(window.ethereum),
@@ -193,6 +224,7 @@ function App() {
       }
 
       if (!ids) {
+        console.log('Getting total documents...');
         const total = await client.readContract({
           address: contractAddress as `0x${string}`,
           abi: contractAbi.abi,
@@ -251,14 +283,20 @@ function App() {
           }
         }
       }
+      console.log('Fetched documents:', items);
       setDocuments(items.reverse());
     } catch (e) {
       console.error('Failed to fetch documents', e);
+      setMessage('Error fetching documents: ' + (e as Error).message);
     }
   };
 
   useEffect(() => {
-    fetchDocuments();
+    if (account) {
+      fetchDocuments();
+    } else {
+      setDocuments([]);
+    }
   }, [account]);
 
   return (
@@ -331,14 +369,16 @@ function App() {
             )}
           </div>
 
-          <div className="surface panel" style={{ marginTop: 18 }}>
-            <div className="row" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
-              <div className="title" style={{ fontSize: 18 }}>Documents</div>
-              <div className="row">
-                <input className="input" placeholder="Filter by category" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} style={{ width: 200 }} />
-                <input className="input" placeholder="Filter by owner (0x...)" value={filterOwner} onChange={(e) => setFilterOwner(e.target.value)} style={{ width: 260 }} />
+          {account && (
+            <div className="surface panel" style={{ marginTop: 18 }}>
+              <div className="row" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
+                <div className="title" style={{ fontSize: 18 }}>Documents</div>
+                <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
+                  <button className="btn" onClick={fetchDocuments}>Refresh</button>
+                  <input className="input" placeholder="Filter by category" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} style={{ width: 180, minWidth: 150 }} />
+                  <input className="input" placeholder="Filter by owner" value={filterOwner} onChange={(e) => setFilterOwner(e.target.value)} style={{ width: 200, minWidth: 150 }} />
+                </div>
               </div>
-            </div>
             <div className="doc-table-wrap">
               <table className="doc-table">
                 <thead>
@@ -359,7 +399,7 @@ function App() {
                     .map((d) => {
                       const deadlineDate = Number(d.deadline) > 0 ? new Date(Number(d.deadline) * 1000) : null;
                       const uploadedDate = new Date(Number(d.uploadTimestamp) * 1000);
-                      const shortOwner = d.owner ? `${d.owner.slice(0, 6)}…${d.owner.slice(-4)}` : '-';
+                      const fullOwner = d.owner || '-';
                       const ipfsHash = d.docHash;
                       const gateways = [
                         `https://gateway.pinata.cloud/ipfs/${ipfsHash}`,
@@ -368,13 +408,18 @@ function App() {
                       ];
                       const copyHash = () => {
                         navigator.clipboard.writeText(ipfsHash);
-                        alert('IPFS hash copied to clipboard!');
+                        alert(`IPFS hash copied to clipboard!\n\nHash: ${ipfsHash}`);
                       };
                       return (
                         <tr key={String(d.id)}>
                           <td>{String(d.id)}</td>
                           <td>{d.category || '-'}</td>
-                          <td title={d.owner || ''}>{shortOwner}</td>
+                          <td title={fullOwner} style={{ 
+                            fontFamily: 'monospace', 
+                            fontSize: '12px', 
+                            wordBreak: 'break-all',
+                            maxWidth: '200px'
+                          }}>{fullOwner}</td>
                           <td>{(d as any).authors || '-'}</td>
                           <td>{deadlineDate ? deadlineDate.toLocaleDateString() : '-'}</td>
                           <td>{uploadedDate.toLocaleString()}</td>
@@ -386,8 +431,8 @@ function App() {
                               <a className="ipfs-btn secondary" href={gateways[2]} target="_blank" rel="noreferrer">
                                 <span>📁</span> Dashboard
                               </a>
-                              <button className="ipfs-btn copy" onClick={copyHash}>
-                                <span>📋</span> Copy
+                              <button className="ipfs-btn copy" onClick={copyHash} title="Copy IPFS hash to clipboard">
+                                <span>📋</span> Copy Hash
                               </button>
                             </div>
                           </td>
@@ -402,7 +447,8 @@ function App() {
                 </tbody>
               </table>
             </div>
-          </div>
+            </div>
+          )}
         </section>
       </main>
 
