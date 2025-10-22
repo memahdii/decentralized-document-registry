@@ -1,129 +1,101 @@
-## 1. Project Summary
-I built a full-stack decentralized application (dApp) called the “Decentralized Document Registry.”
+## Decentralized Document Registry
 
-The purpose of this project is to allow users to securely register important documents. It achieves this by using a hybrid storage model:
-- It stores the actual document file on a decentralized network called IPFS.
-- It then records the proof-of-existence—essential metadata like the owner, a category, and a unique hash of the file—on the Ethereum blockchain via a smart contract.
+A monorepo containing a Solidity smart contract and a React frontend for registering documents on-chain while storing the file itself on IPFS. The on-chain registry keeps an immutable record of the document's IPFS content hash and associated metadata (category, optional deadline, owner, timestamp).
 
-This approach provides a verifiable, tamper-proof record on the blockchain while keeping the storage of large files efficient and cost-effective.
-
-## 2. Technologies Used
-
-### Backend (The Smart Contract)
-- Solidity: The primary programming language used to write the smart contract, which is the standard for the Ethereum ecosystem.
-- Hardhat: A professional development environment used to compile, test, deploy, and manage the smart contract’s lifecycle. It also runs a local blockchain node for testing.
-- Ethereum Virtual Machine (EVM): The runtime environment where the Solidity code executes (locally simulated by Hardhat).
-
-### Decentralized Storage
-- IPFS (InterPlanetary File System): A peer-to-peer network for storing files in a distributed way. Unlike a traditional server, files are addressed by their content (using a unique hash), not their location.
-- Pinata: An IPFS pinning service. We used Pinata as an easy-to-use gateway to upload files to IPFS and to ensure they remain available (“pinned”).
-
-### Frontend (The User Interface)
-- React: A popular JavaScript library used to build the interactive web UI.
-- TypeScript: A superset of JavaScript that adds static typing for a more robust development experience.
-- Vite: A modern, fast build tool used to develop and serve the React app.
-- Viem.js: A lightweight and efficient TypeScript library used to communicate with the Ethereum blockchain. It bridges the website to MetaMask and smart contract calls.
-
-### Wallet & Connection
-- MetaMask: A browser-based crypto wallet that users need to interact with the dApp. It securely manages their accounts and private keys, and is used to sign and approve transactions.
-
-## 3. The Workflow (How It All Works)
-
-1) Connect Wallet: A user arrives at the web application and clicks “Connect Wallet.” MetaMask prompts them to approve the connection. Once approved, the website can see their public wallet address.
-
-2) Prepare Document: The user fills out the form on the website, entering metadata like “Category” and selecting a file from their computer.
-
-3) Upload to IPFS: When the user clicks “Register Document,” the first action happens off-chain. The frontend sends the selected file to Pinata, which adds the file to the IPFS network and returns a unique IPFS Hash (CID).
-
-4) Create Transaction: The frontend then takes this IPFS Hash and the other metadata from the form and uses Viem to construct a transaction that calls the `uploadDocument` function on the smart contract.
-
-5) Sign Transaction: This transaction request is sent to MetaMask. MetaMask pops up and asks the user to review and confirm the transaction (including the gas fee). The user signs it with their private key, authorizing the action.
-
-6) Confirm on Blockchain: Once confirmed, the transaction is sent to the blockchain. When it’s mined and validated by the network, the document’s metadata and its IPFS hash are permanently and immutably stored inside the smart contract. The application then shows a success message with the transaction hash.
-
-
-## 4. Quickstart
+### Repository Layout
+- `doc-registry/`: Hardhat 3 project with the `DocumentRegistry` contract and Ignition deployment module
+- `frontend/`: React + TypeScript + Vite dApp that uploads files to IPFS and records metadata on-chain
 
 ### Prerequisites
-- Node.js 18+ and npm
-- MetaMask (browser extension)
-- Pinata account (for IPFS uploads)
+- Node.js 20+
+- npm 9+
+- A modern browser with MetaMask (or any EVM wallet injected provider)
 
-### 4.1. Clone and install
+Optional for testnets:
+- A funded account on your target testnet (e.g., Sepolia)
+
+### Quick Start (Local)
+1) Install dependencies
+
 ```bash
-git clone <this-repo-url>
-cd decentralized-document-registry
-
-# Install backend deps
-cd doc-registry
-npm install
-
-# Install frontend deps
-cd ../frontend
-npm install
+cd /home/md/Desktop/github/decentralized-document-registry/doc-registry && npm i
+cd /home/md/Desktop/github/decentralized-document-registry/frontend && npm i
 ```
 
-### 4.2. Start a local blockchain and deploy
+2) Start a local Hardhat node
+
 ```bash
-# In one terminal: start a local Hardhat node (if you want logs, run `npx hardhat node`)
-cd doc-registry
+cd /home/md/Desktop/github/decentralized-document-registry/doc-registry
 npx hardhat node
 ```
 
-Open a second terminal:
-```bash
-# Compile
-cd doc-registry
-npx hardhat compile
+3) In a new terminal, deploy the contract using Ignition
 
-# Deploy DocumentRegistry via Ignition to localhost
-npx hardhat ignition deploy ./ignition/modules/DeployRegistry.ts --network localhost
+```bash
+cd /home/md/Desktop/github/decentralized-document-registry/doc-registry
+npx hardhat ignition deploy ignition/modules/DeployRegistry.ts
 ```
 
-Note: The default local address in the frontend is `0x5FbDB2315678afecb367f032d93F642f64180aa3`. If your deployment prints a different address, update it in the frontend (see next step).
+This will output a deployed address for `DocumentRegistry`. The local chain id is typically `31337`.
 
-### 4.3. Configure the frontend
-- Open `frontend/src/App.tsx` and set:
-  - `contractAddress` to the deployed `DocumentRegistry` address.
-  - Replace the demo `PINATA_JWT` with your own (or remove and proxy via a backend for security).
+4) Start the frontend
 
-### 4.4. Run the frontend
 ```bash
-cd frontend
+cd /home/md/Desktop/github/decentralized-document-registry/frontend
 npm run dev
 ```
-- Open the URL shown (typically `http://localhost:5173`).
-- In MetaMask, add/switch to the Hardhat network (the app auto-prompts). Chain ID: 31337, RPC: `http://127.0.0.1:8545`.
 
-### 4.5. Use the app
-1) Click “Connect Wallet”.
-2) Fill Category/Authors/Deadline and choose a file.
-3) Click “Register Document”:
-   - File is pinned to IPFS via Pinata → returns a CID.
-   - Transaction calls `uploadDocument(CID, ...)` on-chain.
-4) See the new row in “Documents” with IPFS links.
+5) Connect your wallet
+- Open the app (shown in the terminal output from the previous step)
+- Connect MetaMask and switch to the Hardhat local network (chain id `31337`)
 
-## 5. Testing and scripts
+### Frontend Notes
+- The frontend lets you:
+  - Upload a file to IPFS (via Pinata or a configured gateway)
+  - Register the file's IPFS hash and metadata on-chain in `DocumentRegistry`
+  - Browse and filter registered documents
+  - Open files through a public IPFS gateway
 
-### 5.1. Run tests (Counter example)
+If you deploy to a different network or redeploy locally, ensure the app points to the correct `DocumentRegistry` address. The project ships with a `DocumentRegistry.json` artifact in `frontend/src/` that you can update or replace with the latest build output if needed.
+
+### Contract Overview
+- `doc-registry/contracts/DocumentRegistry.sol`: Stores for each document the IPFS content hash and metadata (category, optional deadline, owner, timestamp). It emits events and exposes read helpers to list or filter documents.
+
+### Deploying to Sepolia (optional)
+You can deploy using Hardhat Ignition. Set a private key for the account that will deploy on Sepolia.
+
 ```bash
-cd doc-registry
-npx hardhat test
+cd /home/md/Desktop/github/decentralized-document-registry/doc-registry
+npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+npx hardhat ignition deploy --network sepolia ignition/modules/DeployRegistry.ts
 ```
 
-### 5.2. Optional: OP-style transaction demo
+Record the deployed contract address and configure the frontend to use it.
+
+### Common Commands
+Hardhat (from `doc-registry/`):
+
 ```bash
-cd doc-registry
-npx ts-node --swc scripts/send-op-tx.ts
+npx hardhat node                  # Start local chain
+npx hardhat compile               # Compile contracts
+npx hardhat test                  # Run tests (if present)
+npx hardhat ignition deploy ignition/modules/DeployRegistry.ts
 ```
 
-## 6. Environment variables (optional, for Sepolia etc.)
-Create `.env` (if deploying beyond localhost) and export as needed:
+Frontend (from `frontend/`):
+
 ```bash
-export SEPOLIA_RPC_URL="https://sepolia.infura.io/v3/<your-key>"
-export SEPOLIA_PRIVATE_KEY="0x<private-key>"
+npm run dev       # Local development server
+npm run build     # Production build
+npm run preview   # Preview production build
 ```
-Then:
-```bash
-npx hardhat ignition deploy ./ignition/modules/DeployRegistry.ts --network sepolia
-```
+
+### Troubleshooting
+- Wallet not connecting: Ensure you're on chain id `31337` when using the local Hardhat node.
+- Contract not found: Redeploy locally and update the frontend to point at the latest `DocumentRegistry` address. Clear any cached artifacts if necessary.
+- IPFS file not loading: Try a different public gateway or verify that your pinning service (e.g., Pinata) successfully pinned the file.
+
+### License
+This repository is provided as-is for educational purposes. See individual subfolders for any specific license files.
+
+
